@@ -1,3 +1,6 @@
+setwd("~/Desktop/Parkinson")
+library(ggplot2)
+library(reshape2)
 dat <- read.csv("Parkinsson disease.csv")
 # Renaming the columns for ease of 
 colnames(dat) <- c("name","avg_fre", "max_fre", "min_fre", "var_fre1", "var_fre2", 
@@ -21,25 +24,49 @@ summary(dat[-1])
 # Duplicate Entries
 sum(duplicated(dat[-1])) # sum is 0
 
-# Histogram of features except status and name column
-dat.hist <- dat[,-c(1,18)]
-par(mfrow=c(2, 11))  # Adjust the rows and columns as needed
-for (col in colnames( dat.hist )) {
-  hist(dat.hist[,col], main = paste("Histogram of", col), xlab = col, 
-       col = "lightblue", border = "black")
-}
-par(mfrow=c(1, 1))
 
-# Correlated columns
-library(corrplot)
-cor_matrix <- cor(dat.hist)
-corrplot(cor_matrix, method = "circle", type = "full", 
-         order = "hclust", 
-         addCoef.col = "black", 
-         tl.col = "black", 
-         tl.srt = 45, 
-         diag = FALSE)
 # Highly positively correlated columns
 # criteria : abs(cor_matrix) >0.9
 # (spread1, PPE), (var_amp5,var_amp1,var_amp3,var_amp6,var_amp2), (var_freq2, var_freq4, var_freq1, var_freq3, var_freq5) )
 # (NHR,var_freq1, var_freq3, var_freq5)
+cor_matrix <- round(cor(dat[,-c(1,18)]), 1)
+
+# Melt the correlation matrix into long format for ggplot2
+melted_cor_matrix <- melt(cor_matrix)
+
+# Heatmap
+ggplot(data = melted_cor_matrix, aes(Var1, Var2, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                       midpoint = 0, limit = c(-1,1), space = "Lab", 
+                       name="Correlation") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 1, 
+                                   size = 10, hjust = 1)) +
+  coord_fixed() +
+  geom_text(aes(Var1, Var2, label = value), color = "black", size = 3) +
+  labs(x = "Features", y = "Features")
+
+df_long <- melt(dat[, -1], id.vars = "status")  # Exclude the 'name' column
+
+# Boxplot
+ggplot(df_long, aes(x = as.factor(status), y = value, fill = as.factor(status))) + 
+  geom_boxplot() + 
+  facet_wrap(~ variable, scales = "free", ncol = 4) +  # Create a 5x5 grid
+  theme_minimal() + 
+  labs(x = "Status", y = "Value", fill = "Status") +  # Adding fill legend title
+  theme(axis.text.x = element_text(angle = 0, hjust = 1), 
+        strip.text = element_text(size = 12),  # Increase facet label size if needed
+        legend.position = "bottom", 
+        panel.grid.major = element_blank(),  # Remove major grid lines
+        panel.grid.minor = element_blank())  # Remove minor grid lines
+scale_fill_brewer(palette = "Set2")  # Change color palette as needed
+
+# Pairplot
+dat$status <- as.factor(dat$status)
+pairs(dat[, c('var_fre1', 'var_fre2', 'var_fre3', 'var_fre4', 'var_fre5')],
+      col = dat$status,  # Color by 'status'
+      pch = 19)
+
+
+write.csv(dat,"parkinson.csv", row.names = FALSE)
