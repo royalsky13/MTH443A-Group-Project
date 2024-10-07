@@ -193,47 +193,6 @@ rownames(confusion.matrix) <- c("Actual: Class 1", "Actual: Class 0")
 confusion.matrix
 (model.accuracy <- round((((tp+tn)/dim(foo[1])[1]) * 100),3) )
 
-
-library(GA)
-X.train <- scale(X.train)
-X.test <- scale(X.test)
-# Define the fitness function: Here we minimize the cross-entropy loss
-logistic_fitness <- function(coefficients){
-  # Compute the linear predictor
-  linear.predictor <- X.train %*% coefficients
-  
-  # Compute the estimated probabilities (logistic function)
-  pi.hat <- exp(linear.predictor) / (1 + exp(linear.predictor))
-  
-  # Binary cross-entropy loss
-  cross_entropy <- -sum(y.train * log(pi.hat + 1e-10) + (1 - y.train) * log(1 - pi.hat + 1e-10))
-  
-  return(-cross_entropy)  # Minimize cross-entropy
-}
-
-# Set up GA parameters
-GA_model <- ga(
-  type = "real-valued",        # We're optimizing real-valued coefficients
-  fitness = logistic_fitness,  # Fitness function defined above
-  lower = rep(-10, ncol(X.train)),  # Lower bounds for coefficients
-  upper = rep(10, ncol(X.train)),   # Upper bounds for coefficients
-  popSize = 100,                # Population size
-  maxiter = 2000,              # Maximum number of generations
-  pmutation = 0.2,             # Mutation probability
-  elitism = 5                  # Number of elite individuals retained
-)
-
-# Retrieve the best set of coefficients
-best_coefficients <- GA_model@solution
-best_coefficients <- as.vector(best_coefficients)
-# Use the best coefficients for prediction
-pi.hat <- exp(X.test %*% best_coefficients) / (1 + exp(X.test %*% best_coefficients))
-predict.y <- ifelse(pi.hat > optimal.threshold, 1, 0)
-
-# Evaluate the model on the test set
-confusion.matrix <- table(Predicted = predict.y, Actual = y.test)
-print(confusion.matrix)
-
 # Calculate test accuracy
 test.accuracy <- sum(diag(confusion.matrix)) / sum(confusion.matrix)
 print(paste("Test Accuracy:", round(test.accuracy * 100, 3), "%"))
