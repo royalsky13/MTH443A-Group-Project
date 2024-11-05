@@ -1,4 +1,8 @@
 setwd("~/Desktop/Parkinson")
+library(MASS)
+library(tidyverse) 
+library(caret)
+library(e1071)
 parkinson <- read.csv("parkinson.csv")
 # Label Encoding
 
