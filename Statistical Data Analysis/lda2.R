@@ -89,7 +89,7 @@ CV.error
 
 
 
-samp <- sample(c(TRUE, FALSE), replace = TRUE, nrow(iris), prob = c(0.9,0.1)) #
+samp <- sample(c(TRUE, FALSE), replace = TRUE, nrow(parkinson), prob = c(0.9,0.1)) #
 
 # Checking for Imbalance 
 prop.table(table(parkinson$status)) # imbalanced
