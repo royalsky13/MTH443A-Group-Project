@@ -7,6 +7,17 @@ colnames(dat) <- c("name","avg_fre", "max_fre", "min_fre", "var_fre1", "var_fre2
                    "var_fre3", "var_fre4", "var_fre5", "var_amp1", "var_amp2", 
                    "var_amp3", "var_amp4", "var_amp5", "var_amp6", "NHR", "HNR", 
                    "status", "RPDE", "DFA", "spread1", "spread2", "D2", "PPE")
+# Pie Chart
+class.proportion <- c(mean(dat$status) * 100, 100 - (mean(dat$status) * 100))
+labels <- c("Parkinson", "Healthy")
+# Custom colors
+colors <- c("lightblue", "lightgreen")
+# Creating labels with percentages
+labels_with_percent <- paste(labels, round(class.proportion, 1), "%")
+# Plotting pie chart with the updated labels
+pie(class.proportion, labels = labels_with_percent, col = colors)
+legend("topright", labels_with_percent,
+       fill = colors)
 
 dim(dat) # 195  X 24: 195 obs of 24 variables
 head(dat, 3)
